@@ -94,5 +94,42 @@ def delete_smartphone(id):
             cursor.close()
             conn.close()
 
+
+@app.route('/dati/aggiorna/<int:id>', methods=['PUT'])
+def update_smartphone(id):
+    data = request.get_json()
+
+    marca = data.get('Marca')
+    modello = data.get('Modello')
+    sistema_operativo = data.get('Sistema_operativo')
+    dimensioni_schermo = data.get('Dimensioni_schermo')
+    capacita_batteria = data.get('Capacita_batteria')
+
+    if not marca or not modello or not sistema_operativo or not dimensioni_schermo or not capacita_batteria:
+        return jsonify({"errore": "Tutti i campi sono obbligatori"}), 400
+
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        query = "UPDATE Smartphones SET Marca = %s, Modello = %s, Sistema_operativo = %s, Dimensioni_schermo = %s, Capacita_batteria = %s WHERE Id = %s"
+        cursor.execute(query, (marca, modello, sistema_operativo, dimensioni_schermo, capacita_batteria, id))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"errore": "Smartphone non trovato"}), 404
+
+        return jsonify({"successo": "Smartphone aggiornato"}), 200
+    
+    except Error as e:
+        print("Errore nella connessione al database:", e)
+        return jsonify({"errore": "Impossibile aggiornare lo smartphone nel database"}), 500
+    
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
 if __name__ == "__main__":
     app.run()

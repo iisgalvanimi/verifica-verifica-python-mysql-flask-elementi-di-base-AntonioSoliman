@@ -68,5 +68,31 @@ def create_smartphone():
         if conn.is_connected():
             cursor.close()
             conn.close()
+
+
+@app.route('/dati/elimina/<int:id>', methods=['DELETE'])
+def delete_smartphone(id):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        query = "DELETE FROM Smartphones WHERE Id = %s"
+        cursor.execute(query, (id,))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"errore": "Smartphone non trovato"}), 404
+
+        return jsonify({"successo": "Smartphone eliminato"}), 200
+    
+    except Error as e:
+        print("Errore nella connessione al database:", e)
+        return jsonify({"errore": "Impossibile eliminare lo smartphone dal database"}), 500
+    
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
 if __name__ == "__main__":
     app.run()

@@ -131,5 +131,27 @@ def update_smartphone(id):
             conn.close()
 
 
+@app.route('/dati/cerca/<filtro>/<valore>', methods=['GET'])
+def search_smartphones(filtro, valore):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        query = f"SELECT * FROM Smartphones WHERE {filtro} = %s"
+        cursor.execute(query, (valore,))
+        result = cursor.fetchall()
+
+        return jsonify(result)
+    
+    except Error as e:
+        print("Errore nella connessione al database:", e)
+        return jsonify({"errore": "Impossibile eseguire la ricerca nel database"}), 500
+    
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
 if __name__ == "__main__":
     app.run()
